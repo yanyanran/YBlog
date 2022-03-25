@@ -1,4 +1,5 @@
 # 源于想把自己的博客上传到github上的有感而学
+Markdown编辑后保存以**.md**为结尾的文件即可。
 ## 1. 标题
 标题是每篇文章都需要也是最常用的格式，在 Markdown 中，如果一段文字被定义为标题，只要在这段文字前加 # 号即可(记得#号后面加空格哦)。
 >## “#” 一级标题
@@ -37,4 +38,6 @@
 >| col 3 is      | right-aligned | $1600 |
 >| col 2 is      | centered      |   $12 |
 >| zebra stripes | are neat      |    $1 |
-:laughing:
+## 还可以加一些可可爱爱的Emoji
+>:laughing::laughing::laughing::laughing::laughing:
+Emoji库：https://www.webfx.com/tools/emoji-cheat-sheet/
