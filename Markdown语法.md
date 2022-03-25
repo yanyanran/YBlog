@@ -1,6 +1,6 @@
 # 源于想把自己的博客上传到github上的有感而学
 ## 导语
->Markdown 是一种轻量级的「标记语言」，它的优点很多，目前也被越来越多的写作爱好者，撰稿者广泛使用。看到这里请不要被「标记」、「语言」所迷惑，Markdown 的语法十分简单。常用的标记符号也不超过十个，这种相对于更为复杂的 HTML 标记语言来说，Markdown 可谓是十分轻量的，学习成本也不需要太多，且一旦熟悉这种语法规则，会有一劳永逸的效果。
+>Markdown 是一种轻量级的**「标记语言」**，它的优点很多，目前也被越来越多的写作爱好者，撰稿者广泛使用。看到这里请不要被「标记」、「语言」所迷惑，Markdown 的语法十分简单。常用的标记符号也不超过十个，这种相对于更为复杂的 HTML 标记语言来说，Markdown 可谓是十分轻量的，学习成本也不需要太多，且一旦熟悉这种语法规则，会有一劳永逸的效果。
 Markdown编辑后保存以.md为结尾的文件即可。
 ## 1. 标题
 标题是每篇文章都需要也是最常用的格式，在 Markdown 中，如果一段文字被定义为标题，只要在这段文字前加 # 号即可(记得#号后面加空格哦)。
@@ -21,13 +21,6 @@ Markdown编辑后保存以.md为结尾的文件即可。
 >*斜体*
 ## 5、引用代码
 引用代码有两种形式。一种是在文本中引入一个代码：使用一个倒引号`括起来；另一种是插入一段代码：使用三个倒引号```括起来：
->```
->```int a = 1;
->int b = 2;
->int c = a+b;
->```
->```
->
 >代码引用长这样
 >```int a = 1;
 >int b = 2;
@@ -47,6 +40,6 @@ Markdown编辑后保存以.md为结尾的文件即可。
 >| col 3 is      | right-aligned | $1600 |
 >| col 2 is      | centered      |   $12 |
 >| zebra stripes | are neat      |    $1 |
-## 还可以加一些可可爱爱的Emoji
+## 7. 还可以加一些可可爱爱的Emoji
 >:laughing::laughing::laughing::laughing::laughing:
-Emoji库：https://www.webfx.com/tools/emoji-cheat-sheet/
+>Emoji库：https://www.webfx.com/tools/emoji-cheat-sheet/
