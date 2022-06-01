@@ -587,3 +587,4 @@ Thread-1: try get lock B...
 只需要把Thread2的LOCK_B和LOCK_A交换即可。
 
 死锁解除输出。
+![avatar](https://img-blog.csdnimg.cn/bf5405daa503449493fbebf202389c6f.png)
