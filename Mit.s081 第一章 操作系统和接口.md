@@ -135,3 +135,41 @@ xv6**隐式分配**大部分用户空间内存：fork分配父内存子副本所
     write(fd, "world", 6);
 ```
 
+
+
+------
+
+
+
+### 3、管道
+
+```C
+    int p[2];
+    char *argv[2];
+    argv[0] = "wc";
+    argv[1] = 0;
+    pipe(p);    // create a new pipeline
+
+    if(fork() == 0) {
+        close(0);
+        dup(p[0]);  // 在数组p中记录读写文件描述符，子进程获得
+        close(p[0]);
+        close(p[1]);
+        exec("/bin/wc", argv);
+    }else {
+        close(p[0]);
+        write(p[1], "hello world\n", 12);
+        close(p[1]);
+    }
+```
+
+程序调用pipe之后创建了一个新管道。fork后子进程调用 close+dup 使文件描述符0指向pipe的读取端，然后关闭p中所存的文件描述符，并调用exec运行；父进程关闭pipe读取端，写入pipe，然后关闭写入端。
+
+
+
+------
+
+
+
+### 4、文件系统
+
