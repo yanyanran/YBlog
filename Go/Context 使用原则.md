@@ -147,3 +147,214 @@ func watch(ctx context.Context, name string) {
 - 给一个函数方法传递 Context 的时候，不要传递 nil，如果不知道传递什么，就使用 `context.TODO`。
 - Context 的 Value 相关方法应该传递必须的数据，不要什么数据都使用这个传递。
 - Context 是线程安全的，可以放心的在多个 goroutine 中传递。
+
+
+
+------
+
+向已关闭的chan写会报panic错误，但是**向已关闭的chan中读, chan会被立即触发**
+
+
+
+## cancel源码 
+
+-> **关闭当前上下文以及子上下文的`ctx.done` 管道**
+
+```go
+func (c *cancelCtx) cancel(removeFromParent bool, err error) {
+   if err == nil {   // 必须要有关闭的原因
+      panic("context: internal error: missing cancel error")
+   }
+   c.mu.Lock()
+   if c.err != nil {
+      c.mu.Unlock()
+      return // 已经关闭，返回
+   }
+   c.err = err  // 通过err标识已经关闭
+   d, _ := c.done.Load().(chan struct{})
+   if d == nil {
+      c.done.Store(closedchan)
+   } else {
+      close(d)  // 【关闭当前done管道】
+   }
+   for child := range c.children {
+      child.cancel(false, err)  // 遍历取消所有子上下文
+   }
+   c.children = nil   // 删除子上下文
+   c.mu.Unlock()
+
+   if removeFromParent {
+      removeChild(c.Context, c)   // 从父上下文删除自己
+   }
+}
+```
+
+
+
+ctx.Done方法返回一个只读的chan，类型为struct{}
+
+【如果Done方法返回的chan可读，意味着parent ctx已经发起了取消请求】，通过Done方法接收到这个信号后应该做清理操作，退出协程释放资源。
+
+
+
+## closechan源码
+
+```go
+func closechan(c *hchan) {
+    // 关闭一个nil channel, panic
+   if c == nil {
+      panic(plainError("close of nil channel"))
+   }
+
+    // 上锁
+   lock(&c.lock)
+    // 如果channel已关闭
+   if c.closed != 0 {
+      unlock(&c.lock)
+      panic(plainError("close of closed channel"))
+   }
+
+   /*if raceenabled {
+      callerpc := getcallerpc()
+      racewritepc(c.raceaddr(), callerpc, abi.FuncPCABIInternal(closechan))
+      racerelease(c.raceaddr())
+   }*/
+
+    // 修改关闭状态
+   c.closed = 1
+
+   var glist gList
+
+   // 将channel所有等待接收队列中的reader释放
+   for {
+       // 从接收队列中出队一个
+      sg := c.recvq.dequeue()
+      if sg == nil { // 出队完了，跳出循环
+         break
+      }
+       
+       // 如果 elem 不为空，说明此 receiver 未忽略接收数据
+		// 给它赋一个相应类型的零值
+      if sg.elem != nil {
+         typedmemclr(c.elemtype, sg.elem)
+         sg.elem = nil
+      }
+      if sg.releasetime != 0 {
+         sg.releasetime = cputicks()
+      }
+       // 取出 goroutine
+       // 相连，形成链表
+      gp := sg.g
+      gp.param = unsafe.Pointer(sg)
+      sg.success = false
+      if raceenabled {
+         raceacquireg(gp, c.raceaddr())
+      }
+      glist.push(gp)
+   }
+
+   // 将channel所有等待接收队列中的writers释放
+   // 如果存在，这些协程将会 panic
+   for {
+      sg := c.sendq.dequeue()
+      if sg == nil {
+         break
+      }
+       // 发送者会 panic
+      sg.elem = nil
+      if sg.releasetime != 0 {
+         sg.releasetime = cputicks()
+      }
+      gp := sg.g
+      gp.param = unsafe.Pointer(sg)
+      sg.success = false
+      if raceenabled {
+         raceacquireg(gp, c.raceaddr())
+      }
+      glist.push(gp)
+   }
+    // 解锁
+   unlock(&c.lock)
+
+   // Ready all Gs now that we've dropped the channel lock.
+    // 遍历链表
+   for !glist.empty() {
+       // 移走glist链表的头
+      gp := glist.pop()
+      gp.schedlink = 0
+       // 唤醒相对应的协程
+      goready(gp, 3)
+   }
+}
+```
+
+对于一个 channel，recvq 和 sendq 中分别保存了阻塞的发送者和接收者。关闭 channel 后，对于等待接收者而言，会收到一个相应类型的零值。对于等待发送者，会直接 panic
+
+
+
+###### 所以在不了解 channel 还有没有接收者的情况下，不能贸然关闭 channel
+
+
+
+close 函数先上一把大锁，接着**把所有挂在这个 channel 上的 sender 和 receiver 全都连成一个链表**，再解锁。最后再将链表中所有的 sudog 全都唤醒。
+
+唤醒之后，sender 会继续执行 chansend 函数里 goparkunlock 函数之后的代码，检测到 channel 已关闭，panic；
+
+receiver 则比较幸运，执行chanrecv函数进行一些扫尾工作后，返回：
+
+```go
+func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool) {
+	// .....
+   lock(&c.lock)
+
+   if c.closed != 0 {  // close-> closed == 1
+      if c.qcount == 0 {
+          // channel已关闭且循环数组 buf 没有元素
+         if raceenabled {
+            raceacquire(c.raceaddr())
+         }
+         unlock(&c.lock)
+         if ep != nil {
+            // 从一个已关闭的 channel 执行接收且不忽略返回值那么接收的值将是一个该类型的零值
+            typedmemclr(c.elemtype, ep)  // typedmemclr 根据类型清理相应地址的内存
+         }
+          // 从一个已关闭的chan接收数据， selected会返回true
+         return true, false
+      }
+   } else {
+		// .....
+   }
+
+   // .....
+}
+```
+
+这里，selected 返回 true，而返回值 received 则要根据 channel 是否关闭，返回不同的值。如果 channel 关闭，received 为 false，否则为 true。
+
+
+
+关闭channel后读取数据的值
+
+如果从一个带缓冲且有数据的chan中读数据，在chan关闭后依旧可以读到有效值：
+
+```go
+func TestChan(t *testing.T) {
+   ch := make(chan int, 5)
+   ch <- 18
+   close(ch)
+   x, ok := <-ch
+   if ok {
+      fmt.Println("received: ", x)
+   }
+
+   x, ok = <-ch
+   if !ok {
+      fmt.Println("channel closed, data invalid.")
+   }
+}
+```
+
+输出结果为：
+
+received:  18
+channel closed, data invalid.
