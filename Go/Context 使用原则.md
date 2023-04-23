@@ -152,7 +152,7 @@ func watch(ctx context.Context, name string) {
 
 ------
 
-向已关闭的chan写会报panic错误，但是**向已关闭的chan中读, chan会被立即触发**
+向已关闭的chan写会报panic错误，但是**向已关闭的chan中读，chan会立即被触发**
 
 
 
@@ -299,6 +299,10 @@ func closechan(c *hchan) {
 close 函数先上一把大锁，接着**把所有挂在这个 channel 上的 sender 和 receiver 全都连成一个链表**，再解锁。最后再将链表中所有的 sudog 全都唤醒。
 
 唤醒之后，sender 会继续执行 chansend 函数里 goparkunlock 函数之后的代码，检测到 channel 已关闭，panic；
+
+
+
+## chanrecv源码（chan关闭部分）
 
 receiver 则比较幸运，执行chanrecv函数进行一些扫尾工作后，返回：
 
