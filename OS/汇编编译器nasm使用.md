@@ -28,11 +28,11 @@ _start:
 
 3、**编译**
 
+`-f`用来指定outputFile格式（bin为默认输出）
+
 ```bash
 nasm -f elf64 hello.asm
 ```
-
-如果是32位系统就把`elf64`改为`elf32`
 
 4、**链接**
 
@@ -45,3 +45,4 @@ ld -s -o hello hello.o
 ```bash
 ./hello
 ```
+
