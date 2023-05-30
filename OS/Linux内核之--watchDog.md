@@ -4,6 +4,18 @@
 
 Linux内核watchDog用于监视系统是否正在运行，可以自动重启挂起的系统。
 
+> 在ubuntu系统使用下面的代码则需要加载softdog，才能出现/dev/watchdog：
+>
+> **sudo modprobe softdog**
+>
+> 查看watchdog日志：
+>
+> **journalctl -u watchdog**
+>
+> /
+>
+> **watchdog status**
+
 
 
 #### 软锁定（Softlockup）检测器和硬锁定（Hardlockup）检测器
