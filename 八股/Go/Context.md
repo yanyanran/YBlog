@@ -24,7 +24,10 @@ context包构建了**树型**关系的Context。底层通过 ***channel + mutex*
 
 
 
+#### context canceled错误
 
+"context canceled" 表示上下文（context）已被取消导致当前操作无法完成。
 
+Go 中上下文是一个结构体，用于在多个 Goroutine 间传递取消信号。当某个 Goroutine 发送取消信号时，其他 Goroutine 将收到该信号并退出相应的操作。这种机制可以用于优雅地停止程序或取消长时间运行的操作。
 
-
+**上下文的取消**可能是由于多种原因引起的：**用户请求超时、资源不足**等。

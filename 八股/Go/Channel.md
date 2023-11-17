@@ -21,6 +21,26 @@
 
 
 
+#### 有缓冲channel和无缓冲channel的区别
+
+有缓冲channel是异步的，无缓冲channel是同步的
+
+
+
+#### 并发场景下什么时候用channel什么时用mutex？
+
+Channel 主要用于有**数据流动/传递的通讯场合**；Mutex 则适用于**数据稳定的场景**
+
+
+
+#### 用channel实现mutex
+
+可以用缓冲大小为 1 的 channel来实现互斥锁mutex
+
+实现原理：如果缓冲满了，写channel时将会阻塞；如果通道清空，发送时就会解除阻塞
+
+
+
 #### 有缓冲channel先写再读
 
 由于channel无缓冲，所以G1暂时被挂在sendq 队列里，然后 G1 调gopark休眠。接着又有goroutine来channel读数据，此时G2发现sendq等待队列里有goroutine存在，于是直接从G1 copy数据过来，并且会对 G1设置goready函数，这样下次调度发生时， G1就可以继续运行，且会从等待队列里移掉
