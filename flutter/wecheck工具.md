@@ -145,7 +145,7 @@ hitTest的原理是先判断事件触发位置是否位于组件范围内：
 
 （2）**Globalkey.currentContext.findRenderObject()**
 
-两个实例出的renderObject传入到hitTest中都可以获取正确的结果，但是我们尽可能避免使用**Globalkey**。使用(2)方法需要在skyline、liteapp和home route下分别建立GlobalKey，这在一个大型项目中，对于状态管理是不利的，所以我们传入的是第一个对象。
+两个实例出的renderObject传入到hitTest中都可以获取正确的结果，但是我们尽可能避免使用**Globalkey**。使用(2)方法需要在skyline、liteapp和home route下分别建立GlobalKey，这在一个大型项目中，对于状态管理是不利的。再者就是GlobalKey开销较大，它只要不被回收就不会释放掉它对应 element 的引用，大量使用会对内存有一定的压力。所以我们传入的是第一个对象。
 
  
 
