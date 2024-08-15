@@ -78,16 +78,13 @@ hitTest的原理是先判断事件触发位置是否位于组件范围内：
     }
     regularHits.sort((RenderObject a, RenderObject b) => area(a).compareTo(area(b))); // 对regularHits列表中的元素按照命中区域大小进行排序，面积越小越靠前
     final Set<RenderObject> hits = <RenderObject>{
-      ...edgeHits,
       ...regularHits,
     };
     return hits.toList();
   }
 
-// edgeHits 可以删除不加
   bool _hitTestHelper(
       List<RenderObject> hits,
-      List<RenderObject> edgeHits,
       Offset position,
       RenderObject object,
       Matrix4 transform,
@@ -122,9 +119,6 @@ hitTest的原理是先判断事件触发位置是否位于组件范围内：
     final Rect bounds = object.semanticBounds;
     if (bounds.contains(localPosition)) {  // 检测是否在bounds里
       hit = true;  // 发生命中
-      if (!bounds.deflate(_edgeHitMargin).contains(localPosition)) {  // 检查localPosition是否在缩小了_edgeHitMargin(2.0)的边界内
-        edgeHits.add(object);  // localPosition不在缩小后的边界内，意味着它位于原始边界的边缘上
-      }
     }
     if (hit) {
       hits.add(object);
