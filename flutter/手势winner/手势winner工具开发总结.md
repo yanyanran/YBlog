@@ -42,7 +42,7 @@ flutter/lib/src/rendering/binding.dart
 
 所以flutter-sdk中直接取得_*handlePointerEventImmediately*在hitTestInView之后存的的*debugHitTestResList ==>* GestureBinding.*debugHitTestResList*
 
-取到[*0*]和[*len-3*]也就是第一个和倒数第二个*renderObj*，取差值即可找到*left*、*right*、*bottom*和*top*，就可以将*widget*正确绘制出来了
+取到[*0*]和[*len-3*]也就是第一个和倒数第二个*renderObj*，取差值即可找到*left*、*right*、*bottom*和*top*，就可以将*widget*正确绘制出来了（错误的做法，正确的解决方法看3）
 
 
 
