@@ -2,6 +2,10 @@
 
 WeCheck工具主要用于产品设计阶段，在审查和绘制软件页面结构时，帮助设计师准确确定页面中各个组件的位置坐标、尺寸、颜色等属性。这便于设计师在审查过程中确保页面设计符合预期。本次开发重点是将WeCheck应用于微信Flutter页面，涵盖订阅号、听一听、图文、Skyline以及LiteApp等多种页面类型。
 
+## 效果
+
+https://github.com/yanyanran/pictures/blob/main/weCheck.mp4
+
 ## 用法
 
 ### 启动手势
